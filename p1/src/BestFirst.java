@@ -1,52 +1,47 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Set;
+import java.util.*;
 
 public class BestFirst extends CercaInformada {
 
-    public BestFirst(ArrayList<Integer> Matriz) {
-        super(Matriz);
+    public BestFirst(Integer[][] Matriz, Operator[] Operadores, HashSet forbiddenCells) {
+        super(Matriz, Operadores, forbiddenCells);
     }
 
-    public static void main(String[] args) {
-        ArrayList<String[]> map = readTSV("matriz_1.tsv");
-        map.forEach(array -> System.out.println(Arrays.toString(array)));
-        //System.out.print("WTF");
+    public Collection<Tupla> setNewStructure(){
+        return new ArrayList<Tupla>();
     }
 
-    @Override
-    protected Comparator<Object> getComparator() {
-        Comparator<Triplete> sortOn3rdValue = new Comparator<Triplete>() {
+    protected Comparator<Tupla> getComparator() {
+        Comparator<Tupla> comp = new Comparator<Tupla>() {
             @Override
-            public int compare(Triplete o1, Triplete o2) {
+            public int compare(Tupla o1, Tupla o2) {
                 Integer v1, v2;
-                v1 =  o1.valorHeuristico;
-                v2 = o2.valorHeuristico;
+                v1 =  o1.getValorHeuristico();
+                v2 = o2.getValorHeuristico();
                 return v1.compareTo(v2);  //(o1.node.X * o1.node.Y) < o2.v3 ? -1 : o1.v3 > o2.v3 ? 1 : 0;
             }
         };
-        return null;
+        return comp;
     }
 
     @Override
-    public Triplete next_trip(Set<Triplete> ListaPendientes) {
-        return null;
+    public Tupla next_trip(Collection<Tupla> ListaPendientes) {
+        return ((ArrayList<Tupla>) ListaPendientes).get(0); //The list is sorted so at the first position will always be the maximun element.
     }
 
     @Override
     public int calcular_heuristica(Nodo nodo) {
-        return 0;
+        return nodo.hashCode();
     }
 
     @Override
-    public void add(Triplete trip, Set<Triplete> ListaPendientes) {
-
+    public void add(Tupla trip, Collection<Tupla> ListaPendientes) {
+        ListaPendientes.add(trip);
+        Collections.sort((ArrayList) ListaPendientes, getComparator());
     }
 
     @Override
-    public void delete_node(Triplete trip, Set<Triplete> ListaPendientes) {
-
+    public void delete_node(Tupla trip, Collection<Tupla> ListaPendientes) {
+        ((ArrayList) ListaPendientes).remove(0);
     }
 
 
