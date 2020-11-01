@@ -8,7 +8,6 @@ public class Practica1 {
     public static void main(String[] args) {
         Integer[][] map = readTSV("matriz_1.tsv");
         //System.out.print(Arrays.deepToString(map));
-        //map.forEach(array -> System.out.println(Arrays.toString(array)));
         Operator[] ops = new Operator[4];
         ops[0] = new Operator(1,0,"abajo");
         ops[1] = new Operator(-1,0,"arriba");
@@ -39,7 +38,6 @@ public class Practica1 {
                 for (int i = 0; i < n.length; i++) {
                     n[i] = Integer.valueOf(lineItems.nextToken());
                 }
-                //String[] lineItems = line.split("\t"); //splitting the line and adding its items in String[]
                 data.add(n); //adding the splitted line array to the ArrayList
             }
         } catch (Exception e) {

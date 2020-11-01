@@ -14,10 +14,10 @@ public class BestFirst extends CercaInformada {
         Comparator<Tupla> comp = new Comparator<Tupla>() {
             @Override
             public int compare(Tupla o1, Tupla o2) {
-                Integer v1, v2;
+                float v1, v2;
                 v1 =  o1.getValorHeuristico();
                 v2 = o2.getValorHeuristico();
-                return v1.compareTo(v2);  //(o1.node.X * o1.node.Y) < o2.v3 ? -1 : o1.v3 > o2.v3 ? 1 : 0;
+                return Float.compare(v1, v2);  //(o1.node.X * o1.node.Y) < o2.v3 ? -1 : o1.v3 > o2.v3 ? 1 : 0;
             }
         };
         return comp;
@@ -26,11 +26,6 @@ public class BestFirst extends CercaInformada {
     @Override
     public Tupla next_trip(Collection<Tupla> ListaPendientes) {
         return ((ArrayList<Tupla>) ListaPendientes).get(0); //The list is sorted so at the first position will always be the maximun element.
-    }
-
-    @Override
-    public int calcular_heuristica(Nodo nodo) {
-        return nodo.hashCode();
     }
 
     @Override

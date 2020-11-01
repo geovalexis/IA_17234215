@@ -21,22 +21,26 @@ public abstract class CercaInformada {
         Collection<Tupla> ListaPendientes = setNewStructure();
         HashSet<Nodo> ListaTratados = new HashSet<>();
 
-        ArrayList<Nodo> camino = new ArrayList<>();
-        Tupla inicio = new Tupla(nodo_inicial, 0, camino, calcular_heuristica(nodo_inicial));
-        ListaPendientes.add(inicio);
+        Nodo current_node = nodo_inicial;
+        ArrayList<Nodo> current_camino = new ArrayList<>();
+        float tiempo = 0;
+        float valHeu = 0;
+        Tupla current_tup = new Tupla(nodo_inicial, tiempo, current_camino, valHeu);
+        ListaPendientes.add(current_tup);
+
         ArrayList<Nodo> solucion = null;
         boolean found=false;
         while (!found && !ListaPendientes.isEmpty()) {
-            Tupla current_trip = next_trip(ListaPendientes);
-            Nodo current_node = current_trip.getNodo();
-            ArrayList<Nodo> current_camino = current_trip.getCamino();
+            current_tup = next_trip(ListaPendientes);
+            current_node = current_tup.getNodo();
+            current_camino = current_tup.getCamino();
 
-            delete_node(current_trip, ListaPendientes);
+            delete_node(current_tup, ListaPendientes);
 
             if (current_node.equals(nodo_final)){
                 found=true;
                 solucion = current_camino;
-                System.out.println("Tiempo total: "+current_trip.getTiempoTotal());
+                System.out.println("Tiempo total: "+current_tup.getTiempoTotal());
             }
             else {
                 ArrayList<Nodo> sucesores = getSucesores(current_node);
@@ -44,9 +48,11 @@ public abstract class CercaInformada {
                     if (!ListaTratados.contains(succ) && !ListaPendientes.contains(succ)){
                         ArrayList<Nodo> new_camino = (ArrayList<Nodo>) current_camino.clone();
                         new_camino.add(current_node);
-                        float new_tiempo = current_trip.getTiempoTotal() + calcular_tiempo(current_node, succ);
-                        add(new Tupla(succ, new_tiempo, new_camino,
-                                calcular_heuristica(succ)), ListaPendientes);
+                        tiempo = current_tup.getTiempoTotal() + calcular_tiempo(current_node, succ);
+                        //valHeu = calcular_heuristicaV1(succ, nodo_final);
+                        //valHeu = calcular_heuristicaV2(succ, nodo_final, tiempo);
+                        valHeu = calcular_heuristicaV3(succ, nodo_final);
+                        add(new Tupla(succ, tiempo, new_camino,valHeu), ListaPendientes);
                     }
                 }
                 ListaTratados.add(current_node);
@@ -60,12 +66,26 @@ public abstract class CercaInformada {
 
     public abstract Tupla next_trip(Collection<Tupla> ListaPendientes);
 
-    public abstract int calcular_heuristica(Nodo node);
+    public int calcular_heuristicaV1(Nodo current_node, Nodo final_node){
+        int final_coors = final_node.getX() * final_node.getY();
+        int current_coors = current_node.getX() * current_node.getY();
+        return final_coors - current_coors;
+    }
+
+    public float calcular_heuristicaV2(Nodo current_node, Nodo final_node, float tiempo){
+        return tiempo;
+    }
+
+
+    public float calcular_heuristicaV3(Nodo current_node, Nodo final_node){
+        float dt = Math.abs(final_node.getValue() - current_node.getValue());
+        return dt;
+    }
 
     public float calcular_tiempo(Nodo nodo_orig, Nodo nodo_desti){
-        int dv = nodo_orig.getValue() - nodo_desti.getValue();
-        if ( dv >= 0){
-            return 1+dv;
+        int dt = nodo_orig.getValue() - nodo_desti.getValue();
+        if ( dt >= 0){
+            return 1+dt;
         }
         else {
             return (float) 0.5;
@@ -95,10 +115,10 @@ public abstract class CercaInformada {
 class Tupla {
     Nodo node;
     ArrayList<Nodo> camino;
-    int valorHeuristico;
+    float valorHeuristico;
     float tiempoTotal;
 
-    public Tupla(Nodo estado, float tiempoTotal, ArrayList<Nodo> camino, int valorHeuristico){
+    public Tupla(Nodo estado, float tiempoTotal, ArrayList<Nodo> camino, float valorHeuristico){
         this.node = estado;
         this.tiempoTotal = tiempoTotal;
         this.camino = camino;
@@ -115,7 +135,7 @@ class Tupla {
 
     public float getTiempoTotal() { return this.tiempoTotal;};
 
-    public int getValorHeuristico(){
+    public float getValorHeuristico(){
         return this.valorHeuristico;
     }
 
