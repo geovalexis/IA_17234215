@@ -23,9 +23,9 @@ public abstract class CercaInformada {
 
         Nodo current_node = nodo_inicial;
         ArrayList<Nodo> current_camino = new ArrayList<>();
-        float tiempo = 0;
+        float coste = 0;
         float valHeu = 0;
-        Tupla current_tup = new Tupla(nodo_inicial, tiempo, current_camino, valHeu);
+        Tupla current_tup = new Tupla(nodo_inicial, coste, current_camino, valHeu);
         ListaPendientes.add(current_tup);
 
         ArrayList<Nodo> solucion = null;
@@ -40,19 +40,18 @@ public abstract class CercaInformada {
             if (current_node.equals(nodo_final)){
                 found=true;
                 solucion = current_camino;
-                System.out.println("Tiempo total: "+current_tup.getTiempoTotal());
+                System.out.println("Nº de nodos tratados: "+ListaTratados.size());
+                System.out.println("Coste (tiempo) total por este camino: "+current_tup.getCosteAcumulado());
             }
             else {
                 ArrayList<Nodo> sucesores = getSucesores(current_node);
                 for(Nodo succ: sucesores){
-                    if (!ListaTratados.contains(succ) && !ListaPendientes.contains(succ)){
+                    if (!ListaTratados.contains(succ)){
                         ArrayList<Nodo> new_camino = (ArrayList<Nodo>) current_camino.clone();
                         new_camino.add(current_node);
-                        tiempo = current_tup.getTiempoTotal() + calcular_tiempo(current_node, succ);
-                        //valHeu = calcular_heuristicaV1(succ, nodo_final);
-                        //valHeu = calcular_heuristicaV2(succ, nodo_final, tiempo);
-                        valHeu = calcular_heuristicaV3(succ, nodo_final);
-                        add(new Tupla(succ, tiempo, new_camino,valHeu), ListaPendientes);
+                        coste = current_tup.getCosteAcumulado() + calcular_coste(current_node, succ);
+                        valHeu = calcular_heuristica(succ, nodo_final, coste);
+                        add(new Tupla(succ, coste, new_camino,valHeu), ListaPendientes);
                     }
                 }
                 ListaTratados.add(current_node);
@@ -66,23 +65,28 @@ public abstract class CercaInformada {
 
     public abstract Tupla next_trip(Collection<Tupla> ListaPendientes);
 
-    public int calcular_heuristicaV1(Nodo current_node, Nodo final_node){
+    public float calcular_heuristica(Nodo current_node, Nodo final_node, float costeAcumulado){
+        //return calcular_heuristicaV1(current_node, final_node);
+        return calcular_heuristicaV2(current_node, final_node);
+        //return calcular_heuristicaV3(current_node, final_node);
+    }
+
+    public float calcular_heuristicaV1(Nodo current_node, Nodo final_node){
         int final_coors = final_node.getX() * final_node.getY();
         int current_coors = current_node.getX() * current_node.getY();
         return final_coors - current_coors;
     }
 
-    public float calcular_heuristicaV2(Nodo current_node, Nodo final_node, float tiempo){
-        return tiempo;
+    public float calcular_heuristicaV2(Nodo current_node, Nodo final_node){
+        return (float) Math.pow(final_node.getValue() - current_node.getValue(), 2);
+    }
+
+    public float calcular_heuristicaV3(Nodo current_node, Nodo next_node){
+        return calcular_coste(current_node, next_node);
     }
 
 
-    public float calcular_heuristicaV3(Nodo current_node, Nodo final_node){
-        float dt = Math.abs(final_node.getValue() - current_node.getValue());
-        return dt;
-    }
-
-    public float calcular_tiempo(Nodo nodo_orig, Nodo nodo_desti){
+    public float calcular_coste(Nodo nodo_orig, Nodo nodo_desti){
         int dt = nodo_orig.getValue() - nodo_desti.getValue();
         if ( dt >= 0){
             return 1+dt;
@@ -116,11 +120,11 @@ class Tupla {
     Nodo node;
     ArrayList<Nodo> camino;
     float valorHeuristico;
-    float tiempoTotal;
+    float costeAcumulado;
 
-    public Tupla(Nodo estado, float tiempoTotal, ArrayList<Nodo> camino, float valorHeuristico){
+    public Tupla(Nodo estado, float costeAcumulado, ArrayList<Nodo> camino, float valorHeuristico){
         this.node = estado;
-        this.tiempoTotal = tiempoTotal;
+        this.costeAcumulado = costeAcumulado;
         this.camino = camino;
         this.valorHeuristico = valorHeuristico;
     }
@@ -133,7 +137,7 @@ class Tupla {
         return this.camino;
     }
 
-    public float getTiempoTotal() { return this.tiempoTotal;};
+    public float getCosteAcumulado() { return this.costeAcumulado;};
 
     public float getValorHeuristico(){
         return this.valorHeuristico;
@@ -189,7 +193,7 @@ class Nodo{
    }
 
    @Override
-   public int hashCode() {return this.X * this.Y;} //+ this.value;}
+   public int hashCode() {return this.X * this.Y * this.value;}
 
    public String toString() {
        return "(x: "+this.X+", y: "+this.Y+", value: "+this.value+")";

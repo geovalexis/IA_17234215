@@ -15,10 +15,14 @@ public class Practica1 {
         ops[3] = new Operator(0,1,"derecha");
 
         HashSet<Integer> forbiddenCells = new HashSet<>() {{add(-1);}};
-        BestFirst bf = new BestFirst(map, ops, forbiddenCells);
-        ArrayList<Nodo> camino_solucion = bf.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
+//        BestFirst bf = new BestFirst(map, ops, forbiddenCells);
+//        ArrayList<Nodo> camino_solucion = bf.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
+
+        A_estrella a_est = new A_estrella(map, ops, forbiddenCells);
+        ArrayList<Nodo> camino_solucion = a_est.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
 
         if (camino_solucion != null){
+            System.out.print("Camino encontrado:\n");
             camino_solucion.forEach(Nodo -> System.out.println(Nodo.toString()));
         }
         else{

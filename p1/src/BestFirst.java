@@ -30,8 +30,11 @@ public class BestFirst extends CercaInformada {
 
     @Override
     public void add(Tupla trip, Collection<Tupla> ListaPendientes) {
-        ListaPendientes.add(trip);
-        Collections.sort((ArrayList) ListaPendientes, getComparator());
+        if ( !ListaPendientes.contains(trip)){
+            ListaPendientes.add(trip);
+            Collections.sort((ArrayList) ListaPendientes, getComparator());
+        }
+
     }
 
     @Override
