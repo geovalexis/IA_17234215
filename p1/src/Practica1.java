@@ -7,6 +7,7 @@ public class Practica1 {
 
     public static void main(String[] args) {
         Integer[][] map = readTSV("matriz_1.tsv");
+        //Integer[][] map = readTSV("matriz_2.tsv");
         //System.out.print(Arrays.deepToString(map));
         Operator[] ops = new Operator[4];
         ops[0] = new Operator(1,0,"abajo");
@@ -15,19 +16,28 @@ public class Practica1 {
         ops[3] = new Operator(0,1,"derecha");
 
         HashSet<Integer> forbiddenCells = new HashSet<>() {{add(-1);}};
-//        BestFirst bf = new BestFirst(map, ops, forbiddenCells);
-//        ArrayList<Nodo> camino_solucion = bf.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
 
-        A_estrella a_est = new A_estrella(map, ops, forbiddenCells);
-        ArrayList<Nodo> camino_solucion = a_est.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
+        BestFirst bf = new BestFirst(map, ops, forbiddenCells);
+        ArrayList<Nodo> solucion_bf = bf.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
 
-        if (camino_solucion != null){
-            System.out.print("Camino encontrado:\n");
-            camino_solucion.forEach(Nodo -> System.out.println(Nodo.toString()));
+        if (solucion_bf != null){
+            System.out.print("Camino encontrado por el algoritmo Best First:\n");
+            solucion_bf.forEach(Nodo -> System.out.println(Nodo.toString()));
         }
         else{
-            System.out.print("No se ha podido encontrar la solución");
+            System.out.print("No se ha podido encontrar solución con el algoritmo Best first.");
         }
+
+        A_estrella a_est = new A_estrella(map, ops, forbiddenCells);
+        ArrayList<Nodo> solucion_aEst = a_est.buscarNodo(new Nodo(0,0,map[0][0]), new Nodo(9,9,map[9][9]));
+        if (solucion_bf != null) {
+            System.out.print("Camino encontrado por el algoritmo A estrella:\n");
+            solucion_aEst.forEach(Nodo -> System.out.println(Nodo.toString()));
+        }
+        else{
+            System.out.print("No se ha podido encontrar solución con el algoritmo A estrella.");
+        }
+
     }
 
     public static Integer[][] readTSV(String filename) {

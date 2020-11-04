@@ -40,7 +40,7 @@ public abstract class CercaInformada {
             if (current_node.equals(nodo_final)){
                 found=true;
                 solucion = current_camino;
-                System.out.println("Nº de nodos tratados: "+ListaTratados.size());
+                System.out.println("\nNº de nodos tratados: "+ListaTratados.size());
                 System.out.println("Coste (tiempo) total por este camino: "+current_tup.getCosteAcumulado());
             }
             else {
@@ -50,7 +50,7 @@ public abstract class CercaInformada {
                         ArrayList<Nodo> new_camino = (ArrayList<Nodo>) current_camino.clone();
                         new_camino.add(current_node);
                         coste = current_tup.getCosteAcumulado() + calcular_coste(current_node, succ);
-                        valHeu = calcular_heuristica(succ, nodo_final, coste);
+                        valHeu = calcular_valor_estimado(succ, nodo_final, coste);
                         add(new Tupla(succ, coste, new_camino,valHeu), ListaPendientes);
                     }
                 }
@@ -65,29 +65,38 @@ public abstract class CercaInformada {
 
     public abstract Tupla next_trip(Collection<Tupla> ListaPendientes);
 
-    public float calcular_heuristica(Nodo current_node, Nodo final_node, float costeAcumulado){
+    public float calcular_valor_estimado(Nodo current_node, Nodo final_node, float costeAcumulado){
         //return calcular_heuristicaV1(current_node, final_node);
-        return calcular_heuristicaV2(current_node, final_node);
-        //return calcular_heuristicaV3(current_node, final_node);
+        //return calcular_heuristicaV2(current_node, final_node);
+        return calcular_heuristicaV3(current_node, final_node);
     }
 
     public float calcular_heuristicaV1(Nodo current_node, Nodo final_node){
+        /*
+            Shortest path
+         */
         int final_coors = final_node.getX() * final_node.getY();
         int current_coors = current_node.getX() * current_node.getY();
         return final_coors - current_coors;
     }
 
     public float calcular_heuristicaV2(Nodo current_node, Nodo final_node){
+        /*
+            Flattest path
+         */
         return (float) Math.pow(final_node.getValue() - current_node.getValue(), 2);
     }
 
-    public float calcular_heuristicaV3(Nodo current_node, Nodo next_node){
-        return calcular_coste(current_node, next_node);
+    public float calcular_heuristicaV3(Nodo current_node, Nodo final_node){
+        /*
+            Fastest (least costly) path
+         */
+        return calcular_coste(current_node, final_node);
     }
 
 
     public float calcular_coste(Nodo nodo_orig, Nodo nodo_desti){
-        int dt = nodo_orig.getValue() - nodo_desti.getValue();
+        int dt = nodo_desti.getValue() - nodo_orig.getValue();
         if ( dt >= 0){
             return 1+dt;
         }
@@ -176,11 +185,11 @@ class Nodo{
         this.value = value;
    }
 
-   public int getX() {return this.X;};
+   public int getX() {return this.X;}
 
-   public int getY() {return this.Y;};
+   public int getY() {return this.Y;}
 
-   public int getValue() {return this.value;};
+   public int getValue() {return this.value;}
 
    @Override
    public boolean equals(Object object){

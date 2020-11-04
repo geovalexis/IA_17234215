@@ -40,8 +40,8 @@ public class A_estrella extends CercaInformada{
     }
 
     @Override
-    public float calcular_heuristica(Nodo current_node, Nodo final_node, float costeAcumulado){
-        return super.calcular_heuristica(current_node, final_node, costeAcumulado) + costeAcumulado;
+    public float calcular_valor_estimado(Nodo current_node, Nodo final_node, float costeAcumulado){
+        return super.calcular_valor_estimado(current_node, final_node, 0) + costeAcumulado;
     }
 
 
