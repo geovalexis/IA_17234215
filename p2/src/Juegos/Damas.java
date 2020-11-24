@@ -57,7 +57,7 @@ public class Damas implements Joc{
             @Override
             public boolean hasNext() {
                 //Habrá siguiente si no me he movido mas filas que el tamaño de la matriz.
-                return Math.abs(current_row-end)<=Math.abs(end-start);
+                return Math.abs(current_row-end)<=Math.abs(start-end);
             }
 
             @Override
@@ -75,10 +75,44 @@ public class Damas implements Joc{
     }
 
     @Override
-    public ArrayList<Node> nextMoves(Node node, int player) {
-        DamasNode damas_node = (DamasNode) node;
+    public ArrayList<Node> nextMoves(Node node_, int player) {
+        DamasNode damas_node = (DamasNode) node_;
+        ArrayList<Node> nextNodes=new ArrayList<Node>();
         Triplet<Integer, Integer, Integer> board_limits = this.getBoardLimits(player, damas_node.getBoardSize());
-        return null;
+        int inc = board_limits.getValue0();
+        int start = board_limits.getValue1();
+        int end = board_limits.getValue2();
+        int opponent = player==user1 ? user2 : user1;
+        for (int row=start; row <= end; row+=inc){
+            int col_start= (row%2==0) ? 1 : 0;  //So that we only look in black cells
+            for (int col=col_start; col<damas_node.getBoardSize(); col+=2){
+                if (damas_node.getCell(row, col)==player){
+                    checkAndMove(row, col, row+inc, col+1, damas_node, nextNodes); //Mirar en la esquina derecha
+                    checkAndMove(row, col, row+inc, col-1, damas_node, nextNodes); //Mirar en la esquina izquierda
+
+                    if (checkAndMove(row, col, row+inc*2, col+2, damas_node, nextNodes) == 1) {
+                        DamasNode nextNode = (DamasNode) nextNodes.get(nextNodes.size()-1);
+                        nextNode.setCell(row+inc, col+1, this.empty_cell); //Eliminar ficha del contrario
+                    } //Mirar en la esquina derecha x2
+                    if (checkAndMove(row, col, row-inc*2, col-2, damas_node, nextNodes)== 1) {
+                        DamasNode nextNode = (DamasNode) nextNodes.get(nextNodes.size()-1);
+                        nextNode.setCell(row-inc, col-1, this.empty_cell); //Eliminar ficha del contrario
+                    } //Mirar en la esquina izquierda x2
+                }
+            }
+        }
+        return nextNodes;
+    }
+
+    public int checkAndMove(int current_row, int current_col, int dest_row, int dest_col, DamasNode current_node, ArrayList<Node> nextNodes){
+        int exit_code=0;
+        if (!current_node.isOutOfBound(dest_row, dest_col) && current_node.getCell(dest_row, dest_col)==this.empty_cell){
+            DamasNode nextNode = current_node.clone();
+            nextNode.moveToken(current_row, current_col, dest_row, dest_col);
+            nextNodes.add(nextNode);
+            exit_code=1;
+        }
+        return exit_code;
     }
 
     public Triplet<Integer, Integer, Integer> getBoardLimits(int player, int board_size){
@@ -106,9 +140,28 @@ class DamasNode implements Node {
         return this.board;
     }
 
+    public void increaseToken(int token) {
+        if (this.tokens_u1==token) this.tokens_u1++;
+        else this.tokens_u2++;
+    }
+
+    public void decreaseToken(int token) {
+        if (this.tokens_u1==token) this.tokens_u1--;
+        else this.tokens_u2--;
+    }
+
+    public void moveToken(int old_row, int old_col, int new_row, int new_col){
+        int aux = this.board[new_row][new_col];
+        this.board[new_row][new_col] = this.board[old_row][old_col];
+        this.board[old_row][old_col] = aux;
+    }
+
+
     public int getCell(int row, int col){
         return this.board[row][col];
     }
+
+    public void setCell(int row, int col, int value) { this.board[row][col]=value;}
 
     public int getNumberOfCellsOf(int row, int type){
         int ocurrences=0;
@@ -122,9 +175,26 @@ class DamasNode implements Node {
         return this.size;
     }
 
+    public boolean isOutOfBound(int row, int col){
+        return isOutOfBound(row) || isOutOfBound(col);
+    }
+
+    public boolean isOutOfBound(int row_or_col){
+        //We can do this because we assumed that the board is always SQUARE SHAPED.
+        return (row_or_col<0) || (row_or_col>=this.size);
+    }
+
     public void setBoard(int [] newBoard){
         //TODO
         //this.board = newBoard;
+    }
+
+    public DamasNode clone(){
+        int [][] board_copy = new int[this.size][];
+        for (int i =0; i < this.size; i++){
+            board_copy[i] = board_copy[i].clone();
+        }
+        return new DamasNode(board_copy, this.tokens_u1, this.tokens_u2);
     }
 
     //TODO
