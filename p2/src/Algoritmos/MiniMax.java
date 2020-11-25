@@ -5,21 +5,14 @@ import Juegos.*;
 
 import java.util.ArrayList;
 
-public class MiniMax {
-    private final int maxDepth;
-    private final short MAX;
-    private final short MIN;
-    private Joc joc;
+public class MiniMax extends SearchAlgorithm{
 
-    public MiniMax(Joc joc, short machine, short user, int nivel_max){
-        this.joc = joc;
-        this.MAX = machine;
-        this.MIN = user;
-        this.maxDepth = nivel_max;
+    public MiniMax(Joc joc, int machine, int user, int nivel_max){
+        super(joc, machine, user, nivel_max);
     }
 
     public Pair<Integer, Node> findBest(Node current_node, int nivel){
-        short current_player = checkPlayer(nivel);
+        int current_player = this.checkPlayer(nivel);
         if (joc.isTerminal(current_node, current_player)) {
             return new Pair<Integer, Node>(current_player==this.MAX ? Integer.MAX_VALUE : Integer.MIN_VALUE, null);
         }
@@ -52,8 +45,4 @@ public class MiniMax {
 
     }
 
-    private short checkPlayer(int nivel) {
-        if (nivel%2==0) return MAX; //Machine player always starts
-        else return MIN;
-    }
 }

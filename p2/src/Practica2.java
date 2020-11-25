@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 
 public class Practica2 {
 
+
     public static void main(String[] args) {
         Integer[][] initial_board = readTSV("initial_board.tsv");
         System.out.print(Arrays.deepToString(initial_board).replace("],", "],\n"));
