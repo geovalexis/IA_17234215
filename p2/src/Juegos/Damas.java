@@ -2,11 +2,13 @@ package Juegos;
 
 import Algoritmos.MiniMax;
 import Algoritmos.SearchAlgorithm;
-import jdk.jshell.spi.ExecutionControl;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 
 public class Damas implements Joc{
@@ -19,7 +21,7 @@ public class Damas implements Joc{
     private SearchAlgorithm black_player;
     private SearchAlgorithm white_player;
 
-    public Damas(int[][] board, int game_mode, int max_depth) {
+    public Damas(Integer[][] board, int game_mode, int max_depth) {
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user);
         setGameMode(game_mode, max_depth);
     }
@@ -33,7 +35,7 @@ public class Damas implements Joc{
             if (isTerminal(this.node, current_player)) break;
             rounds++;
         }
-        System.out.print("Player "+current_player+"! Congratulations!");
+        System.out.printf("Player %s! Congratulations!", (current_player == black_tokens) ? "black" : "white");
     }
 
     public void round(int player){
@@ -48,7 +50,15 @@ public class Damas implements Joc{
     }
 
     public void roundUser(int player){
-        //TODO: implementar lógica de juego del usuario
+        System.out.print(this.node.toString());
+        Scanner input = new Scanner(System.in);
+        while (true){
+            System.out.printf("Please, select a cell you would like to move to (Ex. B6). You have tokens: %d", player);
+            String cell = input.next();
+            if (cell.matches("\\w\\d")) break;
+            System.out.print("You must follow the following format COLUMN|ROW (Examples: A2, C6, E4... ");
+        }
+
     }
 
     public void setGameMode(int gameMode, int max_depth){
@@ -189,18 +199,18 @@ public class Damas implements Joc{
 }
 
 class DamasNode implements Node {
-    private int[][] board;
+    private Integer[][] board;
     private int size;
     private int tokens_u1, tokens_u2;
 
-    public DamasNode( int[][] board, int tokens_u1, int tokens_u2){
+    public DamasNode( Integer[][] board, int tokens_u1, int tokens_u2){
         this.board = board;
         this.size = board.length; //We assume it's square matrix
         this.tokens_u1 = tokens_u1;
         this.tokens_u2 = tokens_u2;
     }
 
-    public int[][] getBoard(){
+    public Integer[][] getBoard(){
         return this.board;
     }
 
@@ -258,7 +268,7 @@ class DamasNode implements Node {
     }
 
     public DamasNode clone(){
-        int [][] board_copy = new int[this.size][];
+        Integer [][] board_copy = new Integer[this.size][];
         for (int i =0; i < this.size; i++){
             board_copy[i] = board_copy[i].clone();
         }
@@ -277,7 +287,19 @@ class DamasNode implements Node {
 
     //TODO
     public String toString(){
-        return "";
+        StringBuilder builder = new StringBuilder();
+        builder.append("\t");
+        for (char c=(char) 65; c <=(char) 65+this.size; c++) builder.append(c+"   ");
+        builder.append("\n");
+        int cont=1;
+        for (Integer[] row: this.board){
+            builder.append(cont+"\t");
+            for (int col: row) builder.append(col+"   ");
+            builder.append("\n");
+            cont++;
+        }
+        return builder.toString()+"Current black tokens: "+this.tokens_u1+"\n"+
+                "Current white tokens: "+this.tokens_u2+"\n";
     }
 }
 
