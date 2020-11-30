@@ -15,7 +15,7 @@ public class Practica2 {
         Integer[][] initial_board = readTSV("initial_board.tsv");
         //System.out.print(Arrays.deepToString(initial_board).replace("],", "],\n"));
 
-        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsUSER, -1); // -1 means no limit
+        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsUSER, 4); // -1 means no limit
         damas_juego.play();
 
     }
