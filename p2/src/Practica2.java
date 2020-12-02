@@ -14,8 +14,14 @@ public class Practica2 {
         Integer[][] initial_board = readTSV("initial_board.tsv");
         //System.out.print(Arrays.deepToString(initial_board).replace("],", "],\n"));
 
-        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.ALFABETA, Joc.ALFABETA, Joc.HEURISTIC_V2, Joc.HEURISTIC_V2, 6); // -1 means no limit
+
+        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.MINIMAX, Joc.ALFABETA, Joc.HEURISTIC_V2, Joc.HEURISTIC_V1, 6, 7); // -1 means no limit
+        //Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.MINIMAX, Joc.HEURISTIC_V3, 6);
+
+        long start = System.currentTimeMillis();
         damas_juego.play();
+        long end = System.currentTimeMillis();
+        System.out.printf("Tiempo de ejecución total: %fs", (end-start)/1000F);
 
     }
 

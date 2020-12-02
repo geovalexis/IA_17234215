@@ -26,35 +26,36 @@ public class Damas implements Joc{
         this.node = initial_node;
     }
 
-    public Damas(Integer[][] board, int game_mode, int searchMode_m1, int searchMode_m2, int max_depth) {
+    //Constructor normal: para echar una partidita buena
+    public Damas(Integer[][] board, int game_mode, int searchMode, int heuristicMode, int max_depth) {
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
-        setGameMode(game_mode, searchMode_m1, searchMode_m2, max_depth,0,0);
+        setGameMode(game_mode, searchMode, searchMode, max_depth, max_depth, heuristicMode,heuristicMode);
     }
 
-    //Manual configurable mode
-    public Damas(Integer[][] board, int game_mode, int searchMode_m1, int searchMode_m2, int heuristicMode_m1, int heuristicMode_m2, int max_depth){
+    //Constructor para pruebas de calidad entre heuristicas y algoritmos de búsquedas
+    public Damas(Integer[][] board, int game_mode, int searchMode_m1, int searchMode_m2, int heuristicMode_m1, int heuristicMode_m2, int max_depth_m1, int max_depth_m2){
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
-        setGameMode(game_mode, searchMode_m1, searchMode_m2, max_depth,heuristicMode_m1,heuristicMode_m2);
+        setGameMode(game_mode, searchMode_m1, searchMode_m2, max_depth_m1, max_depth_m2,heuristicMode_m1,heuristicMode_m2);
     }
 
 
-    public void setGameMode(int gameMode, int searchMode_m1, int searchMode_m2, int max_depth, int heuristicMode_m1, int heuristicMode_m2){
+    public void setGameMode(int gameMode, int searchMode_m1, int searchMode_m2, int max_depth_m1, int max_depth_m2, int heuristicMode_m1, int heuristicMode_m2){
         Damas damas_heuristic_m1=this, damas_heuristic_m2=this;
         if (heuristicMode_m1!=0) damas_heuristic_m1=heuriscticFactory(this.node.clone(), heuristicMode_m1);
         if (heuristicMode_m2!=0) damas_heuristic_m2=heuriscticFactory(this.node.clone(), heuristicMode_m2);
         switch (gameMode)
         {
             case MACHINEvsUSER:
-                black_player= searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth);
+                black_player= searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth_m1) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth_m1);
                 white_player=null;
                 break;
             case MACHINEvsMACHINE:
-                black_player=searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth);
-                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth);
+                black_player=searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth_m1) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth_m1);
+                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth_m2) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth_m2);
                 break;
             case USERvsMACHINE:
                 black_player=null;
-                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth);
+                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth_m2) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth_m2);
                 break;
             case USERvsUSER:
                 //throw new ExecutionControl.NotImplementedException("Functionality still unavailable");
