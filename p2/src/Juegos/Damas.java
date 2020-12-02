@@ -21,26 +21,40 @@ public class Damas implements Joc{
     private SearchAlgorithm black_player;
     private SearchAlgorithm white_player;
 
-    public Damas(Integer[][] board, int game_mode, int searchMode, int max_depth) {
+    //Este constructor solo es válido para generar una clase hija con un método calcularHeuristica modificado.
+    public Damas(DamasNode initial_node){
+        this.node = initial_node;
+    }
+
+    public Damas(Integer[][] board, int game_mode, int searchMode_m1, int searchMode_m2, int max_depth) {
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
-        setGameMode(game_mode, searchMode, max_depth);
+        setGameMode(game_mode, searchMode_m1, searchMode_m2, max_depth,0,0);
+    }
+
+    //Manual configurable mode
+    public Damas(Integer[][] board, int searchMode_m1, int searchMode_m2, int heuristicMode_m1, int heuristicMode_m2, int max_depth){
+        this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
+        setGameMode(MACHINEvsMACHINE, searchMode_m1, searchMode_m2, max_depth,heuristicMode_m1,heuristicMode_m2);
     }
 
 
-    public void setGameMode(int gameMode, int searchMode, int max_depth){
+    public void setGameMode(int gameMode, int searchMode_m1, int searchMode_m2, int max_depth, int heuristicMode_m1, int heuristicMode_m2){
+        Damas damas_heuristic_m1=this, damas_heuristic_m2=this;
+        if (heuristicMode_m1!=0) damas_heuristic_m1=heuriscticFactory(this.node, heuristicMode_m1);
+        if (heuristicMode_m2!=0) damas_heuristic_m2=heuriscticFactory(this.node, heuristicMode_m2);
         switch (gameMode)
         {
             case MACHINEvsUSER:
-                black_player= searchMode==MINIMAX ? new MiniMax(this, black_tokens, white_tokens, max_depth) : new AlfaBeta(this, black_tokens, white_tokens, max_depth);
+                black_player= searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth);
                 white_player=null;
                 break;
             case MACHINEvsMACHINE:
-                black_player=searchMode==MINIMAX ? new MiniMax(this, black_tokens, white_tokens, max_depth) : new AlfaBeta(this, black_tokens, white_tokens, max_depth);
-                white_player=searchMode==MINIMAX ? new MiniMax(this, white_tokens, black_tokens, max_depth) : new AlfaBeta(this, white_tokens, black_tokens, max_depth);
+                black_player=searchMode_m1==MINIMAX ? new MiniMax(damas_heuristic_m1, black_tokens, white_tokens, max_depth) : new AlfaBeta(damas_heuristic_m1, black_tokens, white_tokens, max_depth);
+                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth);
                 break;
             case USERvsMACHINE:
                 black_player=null;
-                white_player=searchMode==MINIMAX ? new MiniMax(this, white_tokens, black_tokens, max_depth) : new AlfaBeta(this, white_tokens, black_tokens, max_depth);
+                white_player=searchMode_m2==MINIMAX ? new MiniMax(damas_heuristic_m2, white_tokens, black_tokens, max_depth) : new AlfaBeta(damas_heuristic_m2, white_tokens, black_tokens, max_depth);
                 break;
             case USERvsUSER:
                 //throw new ExecutionControl.NotImplementedException("Functionality still unavailable");
@@ -48,6 +62,22 @@ public class Damas implements Joc{
             default:
                 throw new IllegalStateException("Unexpected value: " + gameMode);
         }
+    }
+
+    public Damas heuriscticFactory(DamasNode initial_node, int heuristic_version){
+        Damas damas_with_heuristic=null;
+        switch(heuristic_version){
+            case HEURISTIC_V1:
+                damas_with_heuristic = new DamasH1(initial_node);
+                break;
+            case HEURISTIC_V2:
+                damas_with_heuristic = new DamasH2(initial_node);
+                break;
+            case HEURISTIC_V3:
+                damas_with_heuristic = new DamasH3(initial_node);
+                break;
+        }
+        return  damas_with_heuristic;
     }
 
     public void play(){
@@ -297,6 +327,42 @@ public class Damas implements Joc{
             return new Triplet<Integer, Integer, Integer>(+1, 0, board_size-1);
         }
         else return new Triplet<Integer, Integer, Integer>( -1, board_size-1, 0);
+    }
+}
+
+class DamasH1 extends Damas{
+
+    public DamasH1(DamasNode initial_node){
+        super(initial_node);
+    }
+
+    @Override
+    public int calcularHeuristica(Node node, int player_id) {
+        return super.calcularHeuristicaV1((DamasNode) node, player_id);
+    }
+}
+
+class DamasH2 extends Damas{
+
+    public DamasH2(DamasNode initial_node){
+        super(initial_node);
+    }
+
+    @Override
+    public int calcularHeuristica(Node node, int player_id) {
+        return super.calcularHeuristicaV2((DamasNode) node, player_id);
+    }
+}
+
+class DamasH3 extends Damas{
+
+    public DamasH3(DamasNode initial_node){
+        super(initial_node);
+    }
+
+    @Override
+    public int calcularHeuristica(Node node, int player_id) {
+        return super.calcularHeuristicaV3((DamasNode) node, player_id);
     }
 }
 
