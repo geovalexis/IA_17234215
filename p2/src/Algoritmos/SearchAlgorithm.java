@@ -17,7 +17,8 @@ public abstract class SearchAlgorithm {
         this.maxDepth = nivel_max;
     }
 
-    public abstract Pair<Integer, Node> findBest(Node current_node, int nivel);
+    public abstract Pair<Integer, Node> findBest(Node current_node, int nivel, int alfa, int beta);
+
 
     public int checkPlayer(int nivel) {
         if (nivel%2==0) return MAX; //Machine player always starts

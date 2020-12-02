@@ -32,16 +32,16 @@ public class Damas implements Joc{
     }
 
     //Manual configurable mode
-    public Damas(Integer[][] board, int searchMode_m1, int searchMode_m2, int heuristicMode_m1, int heuristicMode_m2, int max_depth){
+    public Damas(Integer[][] board, int game_mode, int searchMode_m1, int searchMode_m2, int heuristicMode_m1, int heuristicMode_m2, int max_depth){
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
-        setGameMode(MACHINEvsMACHINE, searchMode_m1, searchMode_m2, max_depth,heuristicMode_m1,heuristicMode_m2);
+        setGameMode(game_mode, searchMode_m1, searchMode_m2, max_depth,heuristicMode_m1,heuristicMode_m2);
     }
 
 
     public void setGameMode(int gameMode, int searchMode_m1, int searchMode_m2, int max_depth, int heuristicMode_m1, int heuristicMode_m2){
         Damas damas_heuristic_m1=this, damas_heuristic_m2=this;
-        if (heuristicMode_m1!=0) damas_heuristic_m1=heuriscticFactory(this.node, heuristicMode_m1);
-        if (heuristicMode_m2!=0) damas_heuristic_m2=heuriscticFactory(this.node, heuristicMode_m2);
+        if (heuristicMode_m1!=0) damas_heuristic_m1=heuriscticFactory(this.node.clone(), heuristicMode_m1);
+        if (heuristicMode_m2!=0) damas_heuristic_m2=heuriscticFactory(this.node.clone(), heuristicMode_m2);
         switch (gameMode)
         {
             case MACHINEvsUSER:
@@ -100,7 +100,7 @@ public class Damas implements Joc{
 
     public void roundMachine(int player, SearchAlgorithm search_alg){
         System.out.printf("\n......TURNO DE LA MAQUINA (%d)", player);
-        Pair<Integer, Node> best_play = search_alg.findBest(this.node, 0);
+        Pair<Integer, Node> best_play = search_alg.findBest(this.node, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         DamasNode temp = (DamasNode) best_play.getValue1();
         if (temp==null){
             System.out.print("\nWARNING! No se ha podido mover la ficha. Es posible que algo haya ido mal o que el jugador se encuentre bloqueado.\n");
