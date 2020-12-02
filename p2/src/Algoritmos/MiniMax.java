@@ -11,7 +11,7 @@ public class MiniMax extends SearchAlgorithm{
         super(joc, machine, user, nivel_max);
     }
 
-    public Pair<Integer, Node> findBest(Node current_node, int nivel, int alfa, int beta){ //Alfa y Beta no son usados para nada
+    public Pair<Integer, Node> findBest(Node current_node, int nivel, int alfa, int beta){ //Alfa y Beta no son usados para nada en este caso
         int current_player = this.checkPlayer(nivel);
         if (joc.isTerminal(current_node, current_player)) {
             return new Pair<Integer, Node>(current_player==this.MAX ? Integer.MIN_VALUE : Integer.MAX_VALUE, null);

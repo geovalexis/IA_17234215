@@ -84,6 +84,7 @@ public class Damas implements Joc{
         int rounds=1;
         int current_player;
         while (true) {
+            System.out.printf("\nRONDA %d: ", rounds);
             current_player = rounds%2!=0 ? black_tokens : white_tokens;
             round(current_player);
             if (isTerminal(this.node, current_player)) break;
@@ -99,11 +100,11 @@ public class Damas implements Joc{
     }
 
     public void roundMachine(int player, SearchAlgorithm search_alg){
-        System.out.printf("\n......TURNO DE LA MAQUINA (%d)", player);
+        System.out.printf("TURNO DE LA MAQUINA (%d)", player);
         Pair<Integer, Node> best_play = search_alg.findBest(this.node, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         DamasNode temp = (DamasNode) best_play.getValue1();
         if (temp==null){
-            System.out.print("\nWARNING! No se ha podido mover la ficha. Es posible que algo haya ido mal o que el jugador se encuentre bloqueado.\n");
+            System.out.print("\nWARNING! No se ha podido mover ficha. Es posible que el jugador se encuentre bloqueado.\n");
         }
         else {
             this.node=temp;
@@ -112,7 +113,7 @@ public class Damas implements Joc{
     }
 
     public void roundUser(int player){
-        System.out.printf("\n......TURNO DEL HUMANO (%d)", player);
+        System.out.printf("TURNO DEL HUMANO (%d)", player);
         Scanner input = new Scanner(System.in);
         int orig_col, orig_row;
         while (true) {
@@ -154,9 +155,7 @@ public class Damas implements Joc{
 
     @Override
     public boolean isTerminal(Node current_node, int player){
-        //VICTORIA SEGURA PARA PLAYER
-        //NOTE: Es un nodo terminal si esta la ultima fila llena? Que pasa si no tenemos suficiente fichas? Que pasa
-        // con las otras 4 fichas restantes?
+        //DEVUELVE TRUE SI VICTORIA SEGURA PARA PLAYER
         int opponent = player== black_tokens ? white_tokens : black_tokens;
         boolean isTerminal=false;
         if ((((DamasNode) current_node).getNumberOfTokens(player)==0 || ((DamasNode) current_node).getNumberOfTokens(opponent)==0) || (nextMoves(current_node, player).isEmpty() && nextMoves(current_node, opponent).isEmpty())){
@@ -207,7 +206,7 @@ public class Damas implements Joc{
     public int calcularHeuristica(Node node, int player_id) {
         //return calcularHeuristicaV1((DamasNode) node, player_id);
         //return calcularHeuristicaV2((DamasNode) node, player_id);
-        return calcularHeuristicaV3((DamasNode) node, player_id);
+        return calcularHeuristicaV3((DamasNode) node, player_id); //DEFAULT HEURISTIC
     }
 
     public int calcularHeuristicaV1(DamasNode node, int player_id){
@@ -218,15 +217,24 @@ public class Damas implements Joc{
     }
 
     public int calcularHeuristicaV2(DamasNode node, int player_id){
-        //Favorecer la eliminación de fichas del contrario.
+        //Favorecer la eliminación de fichas del contrario -> aquellos que tengan mas diferencia de fichas y en más oponentes alrededor se verán favorecidos.
         int opponent = player_id== black_tokens ? white_tokens : black_tokens;
-        int player_tokens=0, opponent_tokens=0;
-        for (int i=0; i<node.getBoardSize(); i++){
-            player_tokens += node.getNumberOfTokens(player_id);
-            opponent_tokens += node.getNumberOfTokens(opponent);
+        int delta_nTokens=node.getNumberOfTokens(player_id)-node.getNumberOfTokens(opponent);
+        int opponent_tokens=0;
+        for (int row=0; row < node.getBoardSize(); row++){
+            for (int col=0; col < node.getBoardSize(); col++){
+                if (node.getCell(row, col) == player_id){
+                    //Mirar alrededores
+                    if (!node.isOutOfBound(row+1, col+1) &&  node.getCell(row+1, col+1)==opponent) opponent_tokens++; //Esquina inferior derecha
+                    if (!node.isOutOfBound(row+1, col-1) &&  node.getCell(row+1, col-1)==opponent) opponent_tokens++; //Esquina inferior izquierda
+                    if (!node.isOutOfBound(row-1, col+1) &&  node.getCell(row-1, col+1)==opponent) opponent_tokens++; //Esquina superior derecha
+                    if (!node.isOutOfBound(row-1, col-1) &&  node.getCell(row-1, col-1)==opponent) opponent_tokens++; //Esquina superior izquierda
+                }
+            }
         }
-        return player_tokens-opponent_tokens;
+        return (int) Math.pow(delta_nTokens, 3)+opponent_tokens; //Es mucho mas importante que el jugador tenga más fichas a que este mas cerca de contrarios
     }
+
 
     public int calcularHeuristicaV3(DamasNode node, int player_id) {
         //Favorecer similitud con un tablero "ideal" utilizando alguna distancia métrica (Hamming distance en este caso)
