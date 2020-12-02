@@ -13,15 +13,16 @@ public class MiniMax extends SearchAlgorithm{
 
     public Pair<Integer, Node> findBest(Node current_node, int nivel){
         int current_player = this.checkPlayer(nivel);
-        ArrayList<Node> sucesores = joc.nextMoves(current_node, current_player);
-        if (sucesores.isEmpty()) {
+        if (joc.isTerminal(current_node, current_player)) {
             return new Pair<Integer, Node>(current_player==this.MAX ? Integer.MIN_VALUE : Integer.MAX_VALUE, null);
         }
-        else if (nivel==this.maxDepth) return new Pair<Integer, Node>(joc.calcularHeuristica(current_node), null);
+        else if (nivel==this.maxDepth) {
+            return new Pair<Integer, Node>(joc.calcularHeuristica(current_node, current_player), null);
+        }
         else {
             Node best = null;
             int maxmin_value = current_player==this.MAX ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-            //ArrayList<Node> sucesores = joc.nextMoves(current_node, current_player);
+            ArrayList<Node> sucesores = joc.nextMoves(current_node, current_player);
             for (Node succ: sucesores){
                 Pair<Integer, Node> new_pair = findBest(succ, nivel+1);
                 int value = new_pair.getValue0();

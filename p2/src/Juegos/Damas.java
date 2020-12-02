@@ -1,10 +1,12 @@
 package Juegos;
 
+import Algoritmos.AlfaBeta;
 import Algoritmos.MiniMax;
 import Algoritmos.SearchAlgorithm;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -19,9 +21,33 @@ public class Damas implements Joc{
     private SearchAlgorithm black_player;
     private SearchAlgorithm white_player;
 
-    public Damas(Integer[][] board, int game_mode, int max_depth) {
+    public Damas(Integer[][] board, int game_mode, int searchMode, int max_depth) {
         this.node = new DamasNode(board, tokens_per_user, tokens_per_user, black_tokens, white_tokens);
-        setGameMode(game_mode, max_depth);
+        setGameMode(game_mode, searchMode, max_depth);
+    }
+
+
+    public void setGameMode(int gameMode, int searchMode, int max_depth){
+        switch (gameMode)
+        {
+            case MACHINEvsUSER:
+                black_player= searchMode==MINIMAX ? new MiniMax(this, black_tokens, white_tokens, max_depth) : new AlfaBeta(this, black_tokens, white_tokens, max_depth);
+                white_player=null;
+                break;
+            case MACHINEvsMACHINE:
+                black_player=searchMode==MINIMAX ? new MiniMax(this, black_tokens, white_tokens, max_depth) : new AlfaBeta(this, black_tokens, white_tokens, max_depth);
+                white_player=searchMode==MINIMAX ? new MiniMax(this, white_tokens, black_tokens, max_depth) : new AlfaBeta(this, white_tokens, black_tokens, max_depth);
+                break;
+            case USERvsMACHINE:
+                black_player=null;
+                white_player=searchMode==MINIMAX ? new MiniMax(this, white_tokens, black_tokens, max_depth) : new AlfaBeta(this, white_tokens, black_tokens, max_depth);
+                break;
+            case USERvsUSER:
+                //throw new ExecutionControl.NotImplementedException("Functionality still unavailable");
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + gameMode);
+        }
     }
 
     public void play(){
@@ -33,79 +59,68 @@ public class Damas implements Joc{
             if (isTerminal(this.node, current_player)) break;
             rounds++;
         }
-        System.out.printf("GAME OVER! El jugador con fichas %s ha ganado! Felicidades!", (current_player == black_tokens) ? "black" : "white");
+        System.out.printf("\nGAME OVER! El jugador %d ha ganado! Felicidades!\n", current_player);
     }
 
     public void round(int player){
         SearchAlgorithm search_alg = player==black_tokens ? black_player : white_player;
-        if (search_alg!=null) roundMachine(search_alg);
+        if (search_alg!=null) roundMachine(player, search_alg);
         else roundUser(player);
     }
 
-    public void roundMachine(SearchAlgorithm search_alg){
+    public void roundMachine(int player, SearchAlgorithm search_alg){
+        System.out.printf("\n......TURNO DE LA MAQUINA (%d)", player);
         Pair<Integer, Node> best_play = search_alg.findBest(this.node, 0);
-        this.node = (DamasNode) best_play.getValue1();
+        DamasNode temp = (DamasNode) best_play.getValue1();
+        if (temp==null){
+            System.out.print("\nWARNING! No se ha podido mover la ficha. Es posible que algo haya ido mal o que el jugador se encuentre bloqueado.\n");
+        }
+        else {
+            this.node=temp;
+            System.out.print(this.node.toString());
+        }
     }
 
     public void roundUser(int player){
+        System.out.printf("\n......TURNO DEL HUMANO (%d)", player);
         Scanner input = new Scanner(System.in);
         int orig_col, orig_row;
         while (true) {
             System.out.print(this.node.toString());
-            System.out.printf("Por favor, introduzca la posición de la ficha que está interesado en mover (Ex. C4, B6...). Tienes las fichas %s:", (player == black_tokens) ? "negras" : "blancas");
+            System.out.print("Por favor, introduzca la posición de la ficha que está interesado en mover (Ex. C4, B6...): ");
             String orig_cell = input.next();
             if (orig_cell.matches("\\w\\d")) {
                 orig_col = (int) orig_cell.toUpperCase().charAt(0) - (int) 'A';
                 orig_row = Character.getNumericValue(orig_cell.charAt(1))  - 1 ;
                 if (!this.node.isOutOfBound(orig_row, orig_col)) break;
             }
-            System.out.print("\n\nERROR!! Debe de seguir el siguiente formato ColumnaFila, sin espacios ni guiones (Ejemplos: A2, C6, E4...) \n");
+            System.out.print("\nERROR!! Debe de seguir el siguiente formato ColumnaFila, sin espacios ni guiones (Ejemplos: A2, C6, E4...) \n");
         }
 
         int dest_col, dest_row;
         while (true) {
-            System.out.printf("Por favor, seleccione la celda a la que le gustaría moverse. Tienes las fichas %s:", (player == black_tokens) ? "negras" : "blancas");
+            System.out.printf("Por favor, seleccione la celda a la que le gustaría moverse: ");
             String dest_cell = input.next();
             if (dest_cell.matches("\\w\\d")) {
                 dest_col = (int) dest_cell.toUpperCase().charAt(0) - (int) 'A';
                 dest_row = Character.getNumericValue(dest_cell.charAt(1))  - 1 ;
                 if (!this.node.isOutOfBound(dest_row, dest_col)) break;
             }
-            System.out.print("\n\nERROR!!Debe de seguir el siguiente formato ColumnaFila, sin espacios ni guiones (Ejemplos: A2, C6, E4...) \n");
+            System.out.print("\nERROR!!Debe de seguir el siguiente formato ColumnaFila, sin espacios ni guiones (Ejemplos: A2, C6, E4...) \n");
         }
 
         DamasNode temp = checkMoveAndDestroy(orig_row, orig_col, dest_row, dest_col, this.node, player);
         if (temp == null) {
-            System.out.print("ERROR! No se ha podido mover la ficha. Por favor, inténtelo de nuevo más tarde.\n");
-            roundUser(player);
+            System.out.print("\nWARNING! No se ha podido mover la ficha. Por favor, inténtelo de nuevo más tarde.\n");
+            //roundUser(player);
         }
-        else this.node=temp;
+        else{
+            this.node=temp;
+            System.out.print(this.node.toString());
+        }
 
-        System.out.print(this.node.toString());
     }
 
-    public void setGameMode(int gameMode, int max_depth){
-        switch (gameMode)
-        {
-            case MACHINEvsUSER:
-                black_player=new MiniMax(this, black_tokens, white_tokens, max_depth);
-                white_player=null;
-                break;
-            case MACHINEvsMACHINE:
-                black_player=new MiniMax(this, black_tokens, white_tokens, max_depth);
-                white_player=new MiniMax(this, white_tokens, black_tokens, max_depth);
-                break;
-            case USERvsMACHINE:
-                black_player=null;
-                white_player=new MiniMax(this, white_tokens, black_tokens, max_depth);
-                break;
-            case USERvsUSER:
-                //throw new ExecutionControl.NotImplementedException("Functionality still unavailable");
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + gameMode);
-        }
-    }
 
     @Override
     public boolean isTerminal(Node current_node, int player){
@@ -114,7 +129,7 @@ public class Damas implements Joc{
         // con las otras 4 fichas restantes?
         int opponent = player== black_tokens ? white_tokens : black_tokens;
         boolean isTerminal=false;
-        if (nextMoves(current_node, player).isEmpty() && nextMoves(current_node, opponent).isEmpty()){
+        if ((((DamasNode) current_node).getNumberOfTokens(player)==0 || ((DamasNode) current_node).getNumberOfTokens(opponent)==0) || (nextMoves(current_node, player).isEmpty() && nextMoves(current_node, opponent).isEmpty())){
             DamasNode damas_node = (DamasNode) current_node;
             Iterator<Integer> damas4player, damas4opponent;
             damas4player = getNumberOfDamasFor(damas_node, player);
@@ -159,8 +174,62 @@ public class Damas implements Joc{
     }
 
     @Override
-    public int calcularHeuristica(Node node) {
-        return 0;
+    public int calcularHeuristica(Node node, int player_id) {
+        //return calcularHeuristicaV1((DamasNode) node, player_id);
+        //return calcularHeuristicaV2((DamasNode) node, player_id);
+        return calcularHeuristicaV3((DamasNode) node, player_id);
+    }
+
+    public int calcularHeuristicaV1(DamasNode node, int player_id){
+        //Favorecer aquellos nodos en los que haya más damas
+        Triplet<Integer, Integer, Integer> board_limits = this.getBoardBorders(player_id, node.getBoardSize());
+        int end = board_limits.getValue2();
+        return node.getNumberOfCellsOf(end, player_id);
+    }
+
+    public int calcularHeuristicaV2(DamasNode node, int player_id){
+        //Favorecer la eliminación de fichas del contrario.
+        int opponent = player_id== black_tokens ? white_tokens : black_tokens;
+        int player_tokens=0, opponent_tokens=0;
+        for (int i=0; i<node.getBoardSize(); i++){
+            player_tokens += node.getNumberOfTokens(player_id);
+            opponent_tokens += node.getNumberOfTokens(opponent);
+        }
+        return player_tokens-opponent_tokens;
+    }
+
+    public int calcularHeuristicaV3(DamasNode node, int player_id) {
+        //Favorecer similitud con un tablero "ideal" utilizando alguna distancia métrica (Hamming distance en este caso)
+        int hamming_distance=0;
+        Integer[][] currentBoard = node.getBoard();
+        Integer[][] goalBoard = createGoalBoard(node, player_id);
+        for (int row=0; row < node.getBoardSize(); row++){
+            for (int col=0; col < node.getBoardSize(); col++){
+                if (currentBoard[row][col] != goalBoard[row][col]){
+                    hamming_distance++;
+                }
+            }
+        }
+        return -hamming_distance; //Alta distancia de Hamming significa baja similitud, y en este caso queremos lo contrario, por eso el negativo.
+    }
+
+    public Integer[][] createGoalBoard(DamasNode node, int player_id){
+        //Crea un tablero "ideal" en el cual todas las fichas del jugador actual estan en el lado contrario y todo el resto son celdas vacías.
+        Integer[][] goalBoard = new Integer[node.getBoardSize()][node.getBoardSize()];
+        for (Integer[] row: goalBoard) Arrays.fill(row, this.empty_cell); //it is not neccesary in this case as empty_cell is also 0 but it's nice to know.
+        Triplet<Integer, Integer, Integer> board_limits = this.getBoardBorders(player_id, node.getBoardSize());
+        int end = board_limits.getValue2();
+        int row=end;
+        int n=this.tokens_per_user;
+        while (n > 0){
+            int col_start = (row % 2 == 0) ? 1 : 0;  //So that we only look in black cells
+            for (int col=col_start; col < node.getBoardSize(); col+=2){
+                goalBoard[row][col]=player_id;
+                n--;
+            }
+            row = Math.abs(row-1);
+        }
+        return goalBoard;
     }
 
     @Override
@@ -173,8 +242,7 @@ public class Damas implements Joc{
         int end = board_limits.getValue2();
         int opponent = player== black_tokens ? white_tokens : black_tokens;
         DamasNode nextNode;
-        int row;
-        for (row=start; Math.abs(start-row)<=Math.abs(start-end); row+=inc){
+        for (int row=start; Math.abs(start-row)<=Math.abs(start-end); row+=inc){
             int col_start= (row%2==0) ? 1 : 0;  //So that we only look in black cells
             for (int col=col_start; col<damas_node.getBoardSize(); col+=2){
                 if (damas_node.getCell(row, col)==player) {
@@ -232,6 +300,8 @@ public class Damas implements Joc{
     }
 }
 
+
+
 class DamasNode implements Node {
     private Integer[][] board;
     private int size;
@@ -248,6 +318,12 @@ class DamasNode implements Node {
 
     public Integer[][] getBoard(){
         return this.board;
+    }
+
+    public int getNumberOfTokens(int token) {
+        if (this.tokenU1 ==token) return this.nTokens_u1;
+        else if (this.tokenU2==token) return this.nTokens_u2;
+        else return -1;
     }
 
     public void increaseToken(int token) {
@@ -296,9 +372,8 @@ class DamasNode implements Node {
         return (row_or_col<0) || (row_or_col>=this.size);
     }
 
-    public void setBoard(int [] newBoard){
-        //TODO
-        //this.board = newBoard;
+    public void setBoard(Integer[][] newBoard){
+        this.board = newBoard;
     }
 
     public DamasNode clone(){
@@ -332,8 +407,8 @@ class DamasNode implements Node {
             builder.append("\n");
             cont++;
         }
-        return builder.toString()+"Fichas negras (1) restantes: "+this.nTokens_u1 +"\n"+
-                "Fichas blancas (2) restantes: "+this.nTokens_u2 +"\n";
+        return "\n"+builder.toString()+"Fichas negras (1) restantes: "+this.nTokens_u1 +"\n"+
+                "Fichas blancas (2) restantes: "+this.nTokens_u2+"\n";
     }
 }
 

@@ -1,12 +1,11 @@
 import Juegos.Damas;
+import Juegos.Joc;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.StringTokenizer;
-import Juegos.Joc;
 
 public class Practica2 {
 
@@ -15,7 +14,7 @@ public class Practica2 {
         Integer[][] initial_board = readTSV("initial_board.tsv");
         //System.out.print(Arrays.deepToString(initial_board).replace("],", "],\n"));
 
-        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsUSER, 4); // -1 means no limit
+        Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.MINIMAX, 6); // -1 means no limit
         damas_juego.play();
 
     }
