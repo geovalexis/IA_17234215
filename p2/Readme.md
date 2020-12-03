@@ -6,7 +6,7 @@ Basta con ejecutar el main disponible en src/Practica2.java
 ### Configuración del modo de juego
 Es necesario modificar la linea 17 del main. Por defecto contiene lo siguiente:
 ```
-Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.ALFABETA, Joc.MINIMAX, Joc.HEURISTIC_V2, Joc.HEURISTIC_V2, 6, 6);
+Damas damas_juego = new Damas(initial_board, Joc.MACHINEvsMACHINE, Joc.ALFABETA, Joc.MINIMAX, Joc.HEURISTIC_V2, Joc.HEURISTIC_V3, 6, 6);
 ``` 
 Las opciones de juego y algoritmos disponibles se encuentran en src/Juegos/Joc.java. En concreto hay 4 modos de juego:
 * MACHINEvsUSER
